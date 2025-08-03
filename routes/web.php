@@ -11,9 +11,9 @@ Route::get('/', [GiftController::class, 'index'])->name('gifts.index');
 Route::post('/reserve/{gift}', [GiftController::class, 'reserve'])->name('gifts.reserve');
 
 // Dashboard (somente para admin logado)
-Route::get('/dashboard', function () {
+Route::get('/painel', function () {
     return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+})->middleware(['auth', 'verified'])->name('painel');
 
 // Área de administração protegida por login
 Route::middleware(['auth'])->group(function () {
