@@ -13,4 +13,10 @@ class GiftController extends Controller
 
         return view('gifts.index', compact('gifts'));
     }
+
+        public function admin()
+    {
+        $gifts = Gift::all();
+        return view('gifts.admin', compact('gifts'));
+    }
 }
