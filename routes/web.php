@@ -3,6 +3,7 @@
 use App\Http\Controllers\GiftController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PainelController;
 
 // Página inicial com a lista de presentes (pública, sem login)
 Route::get('/', [GiftController::class, 'index'])->name('gifts.index');
@@ -11,9 +12,9 @@ Route::get('/', [GiftController::class, 'index'])->name('gifts.index');
 Route::post('/reserve/{gift}', [GiftController::class, 'reserve'])->name('gifts.reserve');
 
 // Dashboard (somente para admin logado)
-Route::get('/painel', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('painel');
+Route::get('/painel', [PainelController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('painel');
 
 // Área de administração protegida por login
 Route::middleware(['auth'])->group(function () {
