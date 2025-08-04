@@ -15,6 +15,7 @@
                 <thead class="table-dark">
                     <tr>
                         <th>#</th>
+                        <th>Imagem</th> <!-- nova coluna -->
                         <th>Nome</th>
                         <th>Categoria</th>
                         <th>Reservado?</th>
@@ -25,6 +26,13 @@
                     @forelse ($gifts as $gift)
                         <tr>
                             <td>{{ $gift->id }}</td>
+                            <td>
+                                @if($gift->image)
+                                    <img src="{{ Storage::url($gift->image) }}" width="60" height="60" style="object-fit: cover;">
+                                @else
+                                    <img src="{{ asset('images/no-image.png') }}" alt="Sem imagem" width="60" height="60" style="object-fit: cover;">
+                                @endif
+                            </td>
                             <td>{{ $gift->name }}</td>
                             <td>{{ $gift->category ?? '-' }}</td>
                             <td>
@@ -46,7 +54,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="text-center">Nenhum presente cadastrado</td>
+                            <td colspan="6" class="text-center">Nenhum presente cadastrado</td>
                         </tr>
                     @endforelse
                 </tbody>

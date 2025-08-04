@@ -8,11 +8,8 @@
     <div class="product-grid">
         @forelse ($gifts as $gift)
             <div class="product-card">
-                @if($gift->image)
-                    <img src="{{ asset('storage/' . $gift->image) }}" alt="{{ $gift->name }}">
-                @else
-                    <img src="{{ asset('images/no-image.png') }}" alt="Sem imagem">
-                @endif
+                <img src="{{ $gift->image ? Storage::url($gift->image) : asset('images/no-image.png') }}"
+                     alt="{{ $gift->name }}">
                 <p>{{ $gift->name }}</p>
             </div>
         @empty
