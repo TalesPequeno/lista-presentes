@@ -18,6 +18,21 @@ class GiftController extends Controller
     public function admin()
     {
         $gifts = Gift::all();
+
+        foreach ($gifts as $gift) {
+            if ($gift->image) {
+                dump([
+                    'id' => $gift->id,
+                    'image_db' => $gift->image, // Caminho salvo no banco
+                    'storage_url' => Storage::url($gift->image), // URL que a view vai usar
+                    'full_path' => public_path('storage/'.$gift->image), // Caminho físico do arquivo
+                    'exists' => file_exists(public_path('storage/'.$gift->image)), // Se o arquivo existe
+                ]);
+            }
+        }
+
+        dd('Fim do debug');
+
         return view('gifts.admin', compact('gifts'));
     }
 
