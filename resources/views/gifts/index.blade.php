@@ -72,13 +72,13 @@
                     </div>
 
                     <div class="product-body">
-                        <div class="d-flex align-items-center gap-2 mb-2">
+                        <div class="cat-row">
                           <span class="gift-cat-badge" title="Categoria">{{ $cat }}</span>
                         </div>
 
                         <h3 class="gift-name" title="{{ $gift->name }}">{{ $gift->name }}</h3>
 
-                        <div class="d-grid">
+                        <div class="d-grid card-cta">
                             <button
                                 type="button"
                                 class="btn btn-gradient btn-lg py-2"
@@ -567,7 +567,6 @@ document.addEventListener('DOMContentLoaded', function () {
   .gift-cat-badge{
     font-size: .4rem;
     padding: .15rem .4rem;
-    margin-left: -2px;
   }
 
   /* botão mais enxuto */
