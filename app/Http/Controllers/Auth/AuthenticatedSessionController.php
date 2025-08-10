@@ -25,10 +25,16 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request): RedirectResponse
     {
         $request->authenticate();
-
         $request->session()->regenerate();
 
-        return redirect()->intended(route('painel', absolute: false));
+        $intended = session('url.intended');
+
+        // Se a intended não existe OU é apenas a home, vai pro painel
+        if (!$intended || $intended === url('/')) {
+            return to_route('painel');
+        }
+
+        return redirect()->to($intended);
     }
 
     /**
