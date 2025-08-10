@@ -104,7 +104,7 @@
     {{-- Modal de reserva --}}
     <div class="modal fade" id="giftModal" tabindex="-1" aria-labelledby="giftModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content modal-elevated">
+            <div class="modal-content modal-elevated modal-rose">
                 <div class="modal-header modal-header-soft">
                     <h5 id="giftModalLabel" class="modal-title">
                         Presentear <span id="modalGiftName" class="text-primary fw-semibold"></span>
@@ -137,7 +137,7 @@
 
                 <div class="modal-footer gap-2">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button id="confirmBtn" type="submit" class="btn btn-success btn-lg px-4" form="giftForm">
+                    <button id="confirmBtn" type="submit" class="btn btn-gradient btn-lg px-4" form="giftForm">
                         <span id="confirmSpinner" class="spinner-border spinner-border-sm d-none me-2" role="status" aria-hidden="true"></span>
                         Confirmar
                     </button>
@@ -173,6 +173,9 @@
             </div>
         </div>
     </div>
+
+    {{-- Botão voltar ao topo --}}
+    <button id="backToTop" class="back-to-top" aria-label="Voltar ao topo" title="Voltar ao topo">↑</button>
 @endsection
 
 @push('scripts')
@@ -222,20 +225,9 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     });
 
-    // meta
-    if (resultCount) {
-      resultCount.textContent = `Exibindo ${shown} de ${cards.length}`;
-    }
-
-    // mensagem "sem resultados"
-    if (noResults) {
-      noResults.classList.toggle('d-none', shown !== 0 || cards.length === 0);
-    }
-
-    // botão limpar
-    if (clearSearch) {
-      clearSearch.classList.toggle('d-none', !(searchInput && searchInput.value));
-    }
+    if (resultCount) resultCount.textContent = `Exibindo ${shown} de ${cards.length}`;
+    if (noResults)   noResults.classList.toggle('d-none', shown !== 0 || cards.length === 0);
+    if (clearSearch) clearSearch.classList.toggle('d-none', !(searchInput && searchInput.value));
   }
 
   // init
@@ -270,7 +262,6 @@ document.addEventListener('DOMContentLoaded', function () {
   // ---- MODAL DE RESERVA ----
   if (!giftModal || !form) return;
 
-  // Preenche gift_id e nome sempre que abrir o modal
   giftModal.addEventListener('show.bs.modal', function (event) {
     const button   = event.relatedTarget;
     const giftId   = button?.getAttribute('data-gift-id');
@@ -289,7 +280,6 @@ document.addEventListener('DOMContentLoaded', function () {
   form.addEventListener('submit', async function(e) {
     e.preventDefault();
 
-    // UI: loading
     confirmBt.disabled = true;
     confirmSp.classList.remove('d-none');
 
@@ -348,8 +338,8 @@ document.addEventListener('DOMContentLoaded', function () {
       const giftId = document.getElementById('gift_id').value;
       const card = document.getElementById(`gift-card-${giftId}`);
       if (card) {
-        card.classList.add('card-hide'); // anima
-        setTimeout(() => { card.remove(); applyFilters(); }, 260); // remove e atualiza contagem
+        card.classList.add('card-hide');
+        setTimeout(() => { card.remove(); applyFilters(); }, 260);
       }
 
       const thanksInstance = new bootstrap.Modal(thanksModal);
@@ -363,6 +353,21 @@ document.addEventListener('DOMContentLoaded', function () {
       confirmSp.classList.add('d-none');
     }
   });
+
+  // ---- VOLTAR AO TOPO ----
+  const backToTop = document.getElementById('backToTop');
+  if (backToTop) {
+    const toggleBackToTop = () => {
+      const y = window.scrollY || document.documentElement.scrollTop;
+      backToTop.classList.toggle('show', y > 300);
+    };
+    toggleBackToTop();
+    window.addEventListener('scroll', toggleBackToTop, { passive: true });
+    backToTop.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
 });
 </script>
 @endpush
@@ -442,8 +447,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   /* Cards */
   .product-card{
-    display: flex;
-  flex-direction: column;
+    display: flex; flex-direction: column;
     border: 1px solid #eef0f3;
     border-radius: var(--radius-2xl);
     background: #fff;
@@ -465,11 +469,14 @@ document.addEventListener('DOMContentLoaded', function () {
     width: 100%; height: 100%;
     object-fit: cover; display: block;
   }
-  .product-body{ padding: .9rem .9rem 1rem; }
+  .product-body{
+    padding: .9rem .9rem 1rem;
+    display: flex; flex-direction: column; flex: 1;
+  }
+  .cat-row{
+    display: flex; align-items: center; gap: .5rem; margin-bottom: .5rem;
+  }
   .gift-name{
-    display: flex;
-  flex-direction: column;
-  flex: 1;   
     font-size: 1rem;
     font-weight: 600;
     color: var(--ink-700);
@@ -477,10 +484,12 @@ document.addEventListener('DOMContentLoaded', function () {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+
+    /* ocupa o espaço “elástico” entre a categoria e o botão, alinhando rodapé */
+    flex: 1;
   }
-  .card-cta{
-  margin-top: auto;        /* empurra o botão pro fim */
-}
+  .card-cta{ margin-top: auto; }
+
   .gift-cat-badge{
     font-size: .75rem;
     padding: .2rem .5rem;
@@ -506,7 +515,7 @@ document.addEventListener('DOMContentLoaded', function () {
   .btn-gradient:hover{ filter: brightness(1.05); }
   .btn-gradient:active{ transform: translateY(1px); }
 
-  /* Modal */
+  /* Modal “elevado” */
   .modal-elevated{
     border: 0; border-radius: var(--radius-xl);
     box-shadow: 0 10px 40px rgba(0,0,0,.15);
@@ -516,6 +525,15 @@ document.addEventListener('DOMContentLoaded', function () {
     padding-bottom: 0;
     background: linear-gradient(180deg, #fff, var(--rose-50));
   }
+
+  /* Modal de reserva “com cor” — aplica no próprio .modal-content */
+  .modal-rose{
+    background: #fff;
+    border: 1px solid #ffe0eb;
+    box-shadow: 0 14px 40px rgba(244,91,138,.18);
+  }
+  .modal-rose .modal-title{ font-weight: 700; }
+  .modal-rose .form-label{ color: var(--ink-600); }
 
   /* Remoção suave do card após reservar */
   .card-hide{
@@ -540,56 +558,71 @@ document.addEventListener('DOMContentLoaded', function () {
     box-shadow: 0 10px 40px rgba(0,0,0,.15);
   }
 
+  /* Botão flutuante “voltar ao topo” */
+  .back-to-top{
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    width: 44px;
+    height: 44px;
+    border: 0;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(135deg, var(--rose-500), var(--rose-600));
+    color: #fff;
+    font-size: 1.25rem;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 8px 18px rgba(255,122,163,.35);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(8px);
+    transition: opacity .2s ease, transform .2s ease, visibility .2s;
+    z-index: 1040;
+  }
+  .back-to-top.show{
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+  .back-to-top:focus{
+    outline: none;
+    box-shadow: 0 0 0 0.25rem rgba(244,91,138,.35);
+  }
+
   /* ====== MOBILE: 2 colunas e cards menores ====== */
-@media (max-width: 575.98px){
-  /* 2 colunas no mobile */
-  .product-grid{
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: .75rem !important;
+  @media (max-width: 575.98px){
+    .product-grid{
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      gap: .75rem !important;
+    }
+    .product-card{ border-radius: .75rem; }
+    .product-media{ aspect-ratio: 1 / 1; }
+    .product-body{ padding: .6rem .6rem .7rem; }
+
+    /* título menor, até 2 linhas, com “altura fantasma” p/ alinhar botão */
+    .gift-name{
+      font-size: .6rem;
+      margin: .35rem 0 .5rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      white-space: normal;
+      line-height: 1.25;
+      min-height: calc(1.25em * 2);
+    }
+
+    .gift-cat-badge{
+      font-size: .4rem;
+      padding: .15rem .4rem;
+    }
+    .btn-gradient.btn-lg{
+      padding: .45rem .6rem;
+      font-size: .875rem;
+      border-radius: .6rem;
+    }
   }
-
-  /* card mais compacto */
-  .product-card{
-    border-radius: .75rem;
-  }
-  .product-media{
-    aspect-ratio: 1 / 1;     /* thumb quadrada ocupa melhor o espaço */
-  }
-  .product-body{
-    padding: .6rem .6rem .7rem;
-  }
-
-  /* título menor e com quebra em 2 linhas */
-  .gift-name{
-    font-size: .6rem;
-    margin: .35rem 0 .5rem;
-    white-space: normal;              /* permite quebrar */
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    white-space: normal;
-
-    line-height: 1.25;
-    min-height: calc(1.25em * 2); /* <- garante a “segunda linha fantasma” */
-    margin: .35rem 0 .5rem;  
-  }
-
-
-
-  /* badge de categoria mais discreta */
-  .gift-cat-badge{
-    font-size: .4rem;
-    padding: .15rem .4rem;
-  }
-
-  /* botão mais enxuto */
-  .btn-gradient.btn-lg{
-    padding: .45rem .6rem;
-    font-size: .875rem;
-    border-radius: .6rem;
-  }
-}
-
 </style>
 @endpush
