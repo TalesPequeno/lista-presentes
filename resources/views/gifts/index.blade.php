@@ -553,7 +553,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   /* título menor e com quebra em 2 linhas */
   .gift-name{
-    font-size: .9rem;
+    font-size: .6rem;
     margin: .35rem 0 .5rem;
     white-space: normal;              /* permite quebrar */
     display: -webkit-box;
@@ -565,7 +565,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   /* badge de categoria mais discreta */
   .gift-cat-badge{
-    font-size: .7rem;
+    font-size: .4rem;
     padding: .15rem .4rem;
   }
 
