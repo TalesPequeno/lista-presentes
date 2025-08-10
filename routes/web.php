@@ -22,6 +22,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/admin/presentes/novo', [GiftController::class, 'create'])->name('gifts.create');
     Route::post('/admin/presentes', [GiftController::class, 'store'])->name('gifts.store');
     Route::delete('/admin/presentes/{gift}', [GiftController::class, 'destroy'])->name('gifts.destroy');
+    Route::get('/admin/presentes/{gift}/editar', [GiftController::class, 'edit'])->name('gifts.edit');
+    Route::put('/admin/presentes/{gift}', [GiftController::class, 'update'])->name('gifts.update');
+
 
     // Rotas padrão do Breeze para o perfil
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

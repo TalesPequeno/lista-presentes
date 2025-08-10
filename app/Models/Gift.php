@@ -18,4 +18,9 @@ class Gift extends Model
         'observation',
         'reserved_at',
     ];
+
+    protected $casts = [
+        'is_reserved' => 'boolean',
+        'reserved_at' => 'datetime', // vira Carbon automaticamente
+    ];
 }
