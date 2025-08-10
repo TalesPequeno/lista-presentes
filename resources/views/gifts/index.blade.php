@@ -11,17 +11,71 @@
         </div>
     </section>
 
+    @php
+        $categories = collect($gifts)->pluck('category')->filter()->unique()->sort()->values();
+    @endphp
+
+    {{-- Filtros (categoria + busca) --}}
+    <div class="container pb-3">
+      <div class="filter-bar">
+        <div class="filter-top">
+          <div class="cat-scroller" id="catScroller" role="tablist" aria-label="Categorias">
+            <button type="button" class="cat-pill active" data-category="">Todos</button>
+            @foreach($categories as $cat)
+              <button type="button" class="cat-pill" data-category="{{ $cat }}">{{ $cat }}</button>
+            @endforeach
+            @if($categories->isEmpty())
+              <button type="button" class="cat-pill" data-category="Sem categoria">Sem categoria</button>
+            @endif
+          </div>
+
+          <div class="search-wrap">
+            <div class="input-group">
+              <span class="input-group-text bg-white border-end-0">
+                🔎
+              </span>
+              <input type="text"
+                     id="searchInput"
+                     class="form-control border-start-0"
+                     placeholder="Buscar presente..."
+                     autocomplete="off">
+              <button id="clearSearch" class="btn btn-outline-secondary d-none" type="button" title="Limpar">×</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="filter-meta">
+          <small id="resultCount" class="text-muted">Exibindo 0 de 0</small>
+        </div>
+      </div>
+    </div>
+
     {{-- Grid de presentes --}}
     <div class="container pb-5">
-        <div class="product-grid">
+        <div id="noResults" class="text-center text-muted py-5 d-none">
+            <p class="mb-1 fs-6">Nenhum presente corresponde ao filtro.</p>
+            <small>Dica: limpe a busca ou escolha outra categoria ✨</small>
+        </div>
+
+        <div class="product-grid" id="productGrid">
             @forelse ($gifts as $gift)
-                <div class="product-card" id="gift-card-{{ $gift->id }}">
+                @php
+                    $cat = $gift->category ?: 'Sem categoria';
+                @endphp
+                <div class="product-card"
+                     id="gift-card-{{ $gift->id }}"
+                     data-name="{{ $gift->name }}"
+                     data-category="{{ $cat }}">
                     <div class="product-media">
                         <img src="{{ $gift->image ? Storage::url($gift->image) : asset('images/no-image.png') }}"
                              alt="{{ $gift->name }}">
                     </div>
 
                     <div class="product-body">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                          <span class="gift-cat-badge" title="Categoria">{{ $cat }}</span>
+                        </div>
+
                         <h3 class="gift-name" title="{{ $gift->name }}">{{ $gift->name }}</h3>
 
                         <div class="d-grid">
@@ -92,34 +146,33 @@
         </div>
     </div>
 
-{{-- Modal de agradecimento --}}
-<div class="modal fade" id="thanksModal" tabindex="-1" aria-labelledby="thanksModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content text-center modal-elevated">
-            <div class="modal-body p-5">
-                <div class="thanks-icon mb-3">🎁</div>
-                <h4 id="thanksModalLabel" class="mb-2">Agradecemos pelo presente! 💕</h4>
+    {{-- Modal de agradecimento --}}
+    <div class="modal fade" id="thanksModal" tabindex="-1" aria-labelledby="thanksModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-center modal-elevated">
+                <div class="modal-body p-5">
+                    <div class="thanks-icon mb-3">🎁</div>
+                    <h4 id="thanksModalLabel" class="mb-2">Agradecemos pelo presente! 💕</h4>
 
-                <p class="mb-2 text-muted">
-                    Nós ficamos muito felizes com o seu carinho.
-                </p>
+                    <p class="mb-2 text-muted">
+                        Nós ficamos muito felizes com o seu carinho.
+                    </p>
 
-                <p class="mb-4 text-muted">
-                    Registramos a reserva de <strong id="thanksGiftName"></strong>
-                    dedicada a <strong id="thanksRecipientName"></strong>.
-                </p>
+                    <p class="mb-4 text-muted">
+                        Registramos a reserva de <strong id="thanksGiftName"></strong>
+                        dedicada a <strong id="thanksRecipientName"></strong>.
+                    </p>
 
-                <p class="mb-4 small text-muted">
-                    Com carinho,<br>
-                    <strong>Lucas &amp; Nathália</strong> {{-- troque pelos nomes do casal, se quiser --}}
-                </p>
+                    <p class="mb-4 small text-muted">
+                        Com carinho,<br>
+                        <strong>Lucas &amp; Nathália</strong>
+                    </p>
 
-                <button type="button" class="btn btn-gradient px-4" data-bs-dismiss="modal">Fechar</button>
+                    <button type="button" class="btn btn-gradient px-4" data-bs-dismiss="modal">Fechar</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
-
 @endsection
 
 @push('scripts')
@@ -132,6 +185,89 @@ document.addEventListener('DOMContentLoaded', function () {
   const confirmSp   = document.getElementById('confirmSpinner');
   const errBox      = document.getElementById('formErrors');
 
+  // ---- FILTROS (categoria + busca) ----
+  const grid        = document.getElementById('productGrid');
+  const cards       = Array.from(grid?.querySelectorAll('.product-card') || []);
+  const catPills    = Array.from(document.querySelectorAll('.cat-pill'));
+  const searchInput = document.getElementById('searchInput');
+  const clearSearch = document.getElementById('clearSearch');
+  const resultCount = document.getElementById('resultCount');
+  const noResults   = document.getElementById('noResults');
+
+  let selectedCategory = ''; // '' = todos
+
+  const norm = (s) => (s || '')
+    .toString()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g,'')
+    .toLowerCase()
+    .trim();
+
+  function applyFilters(){
+    const q = norm(searchInput?.value || '');
+    let shown = 0;
+
+    cards.forEach(card => {
+      const name = norm(card.dataset.name);
+      const cat  = norm(card.dataset.category);
+
+      const matchesText = !q || name.includes(q);
+      const matchesCat  = !selectedCategory || cat === norm(selectedCategory);
+
+      if (matchesText && matchesCat) {
+        card.classList.remove('d-none');
+        shown++;
+      } else {
+        card.classList.add('d-none');
+      }
+    });
+
+    // meta
+    if (resultCount) {
+      resultCount.textContent = `Exibindo ${shown} de ${cards.length}`;
+    }
+
+    // mensagem "sem resultados"
+    if (noResults) {
+      noResults.classList.toggle('d-none', shown !== 0 || cards.length === 0);
+    }
+
+    // botão limpar
+    if (clearSearch) {
+      clearSearch.classList.toggle('d-none', !(searchInput && searchInput.value));
+    }
+  }
+
+  // init
+  applyFilters();
+
+  // categoria
+  catPills.forEach(btn => {
+    btn.addEventListener('click', () => {
+      catPills.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedCategory = btn.getAttribute('data-category') || '';
+      applyFilters();
+    });
+  });
+
+  // busca live
+  searchInput?.addEventListener('input', applyFilters);
+  clearSearch?.addEventListener('click', () => {
+    searchInput.value = '';
+    applyFilters();
+    searchInput.focus();
+  });
+
+  // ESC para limpar
+  searchInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      searchInput.value = '';
+      applyFilters();
+    }
+  });
+
+  // ---- MODAL DE RESERVA ----
   if (!giftModal || !form) return;
 
   // Preenche gift_id e nome sempre que abrir o modal
@@ -211,8 +347,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
       const giftId = document.getElementById('gift_id').value;
       const card = document.getElementById(`gift-card-${giftId}`);
-      if (card) card.classList.add('card-hide'); // anima e remove
-      setTimeout(() => { if (card) card.remove(); }, 260);
+      if (card) {
+        card.classList.add('card-hide'); // anima
+        setTimeout(() => { card.remove(); applyFilters(); }, 260); // remove e atualiza contagem
+      }
 
       const thanksInstance = new bootstrap.Modal(thanksModal);
       thanksInstance.show();
@@ -256,6 +394,45 @@ document.addEventListener('DOMContentLoaded', function () {
     margin-top: .25rem;
   }
 
+  /* Filter bar */
+  .filter-bar{
+    background: #fff;
+    border: 1px solid #eef0f3;
+    border-radius: 1rem;
+    padding: .75rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,.03);
+  }
+  .filter-top{
+    display: grid; gap: .75rem;
+    grid-template-columns: 1fr minmax(220px, 360px);
+  }
+  @media (max-width: 768px){
+    .filter-top{ grid-template-columns: 1fr; }
+  }
+  .cat-scroller{
+    display: flex; gap: .5rem; overflow-x: auto; padding-bottom: .25rem;
+    scrollbar-width: thin;
+  }
+  .cat-pill{
+    border: 1px solid #e9eef6;
+    background: #fff;
+    color: #374151;
+    padding: .4rem .7rem;
+    border-radius: 999px;
+    font-size: .875rem;
+    white-space: nowrap;
+    transition: background .15s ease, border-color .15s ease, color .15s ease;
+  }
+  .cat-pill:hover{ background: #f9fafb; }
+  .cat-pill.active{
+    background: linear-gradient(135deg, var(--rose-500), var(--rose-600));
+    border-color: transparent;
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(255,122,163,.35);
+  }
+  .search-wrap .input-group .form-control{ border-left: 0; }
+  .filter-meta{ padding: 0 .25rem; margin-top: .25rem; }
+
   /* Grid */
   .product-grid{
     display: grid;
@@ -269,7 +446,7 @@ document.addEventListener('DOMContentLoaded', function () {
     border-radius: var(--radius-2xl);
     background: #fff;
     overflow: hidden;
-    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, opacity .2s ease;
     box-shadow: 0 2px 10px rgba(0,0,0,.04);
   }
   .product-card:hover{
@@ -286,9 +463,7 @@ document.addEventListener('DOMContentLoaded', function () {
     width: 100%; height: 100%;
     object-fit: cover; display: block;
   }
-  .product-body{
-    padding: .9rem .9rem 1rem;
-  }
+  .product-body{ padding: .9rem .9rem 1rem; }
   .gift-name{
     font-size: 1rem;
     font-weight: 600;
@@ -297,6 +472,18 @@ document.addEventListener('DOMContentLoaded', function () {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+  .gift-cat-badge{
+    font-size: .75rem;
+    padding: .2rem .5rem;
+    border-radius: 999px;
+    background: var(--rose-50);
+    color: var(--rose-700);
+    border: 1px solid #ffd3e0;
+    max-width: 100%;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
   }
 
   /* Botão degradê */
@@ -329,23 +516,66 @@ document.addEventListener('DOMContentLoaded', function () {
     transition: all .25s ease;
   }
 
-  /* Ajustes acessibilidade */
+  /* Acessibilidade */
   .btn:focus, .form-control:focus, .btn-close:focus{
     box-shadow: 0 0 0 0.25rem rgba(244, 91, 138, .25) !important;
   }
 
   /* Modal de agradecimento com fundo igual ao da página */
-    #thanksModal .modal-content {
-    background: var(--bs-body-bg) !important;  /* usa a mesma cor/fundo do body do Bootstrap */
+  #thanksModal .modal-content {
+    background: var(--bs-body-bg) !important;
     color: var(--bs-body-color);
     border: 1px solid rgba(0,0,0,.05);
-    }
-
-    /* mantém o mesmo estilo de borda/sombra que você já tinha */
-    #thanksModal .modal-content.modal-elevated {
+  }
+  #thanksModal .modal-content.modal-elevated {
     border-radius: 1rem;
     box-shadow: 0 10px 40px rgba(0,0,0,.15);
-    }
+  }
+
+  /* ====== MOBILE: 2 colunas e cards menores ====== */
+@media (max-width: 575.98px){
+  /* 2 colunas no mobile */
+  .product-grid{
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: .75rem !important;
+  }
+
+  /* card mais compacto */
+  .product-card{
+    border-radius: .75rem;
+  }
+  .product-media{
+    aspect-ratio: 1 / 1;     /* thumb quadrada ocupa melhor o espaço */
+  }
+  .product-body{
+    padding: .6rem .6rem .7rem;
+  }
+
+  /* título menor e com quebra em 2 linhas */
+  .gift-name{
+    font-size: .9rem;
+    margin: .35rem 0 .5rem;
+    white-space: normal;              /* permite quebrar */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;            /* até 2 linhas */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.25;
+  }
+
+  /* badge de categoria mais discreta */
+  .gift-cat-badge{
+    font-size: .7rem;
+    padding: .15rem .4rem;
+  }
+
+  /* botão mais enxuto */
+  .btn-gradient.btn-lg{
+    padding: .45rem .6rem;
+    font-size: .875rem;
+    border-radius: .6rem;
+  }
+}
 
 </style>
 @endpush
