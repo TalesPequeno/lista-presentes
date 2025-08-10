@@ -51,7 +51,10 @@
                     <span class="stat-label">Produtos reservados</span>
                     <span class="stat-value">{{ $reservedGifts }}</span>
                 </div>
-                <a href="{{ route('gifts.admin') }}" class="stretched-link" aria-label="Ver produtos reservados"></a>
+                <a href="{{ route('gifts.admin', ['reserved' => '1']) }}"
+                    class="stretched-link"
+                    aria-label="Ver produtos reservados">
+                </a>
             </div>
         </div>
 
@@ -64,7 +67,10 @@
                     <span class="stat-label">Disponíveis</span>
                     <span class="stat-value">{{ $availableGifts }}</span>
                 </div>
-                <a href="{{ route('gifts.admin') }}" class="stretched-link" aria-label="Ver produtos disponíveis"></a>
+                <a href="{{ route('gifts.admin', ['reserved' => '0']) }}"
+                    class="stretched-link"
+                    aria-label="Ver produtos reservados">
+                </a>
             </div>
         </div>
     </div>

@@ -12,9 +12,14 @@
             <small class="text-muted">Gerencie os presentes, filtre por status e cadastre novos itens</small>
         </div>
 
+        <div class="d-flex gap-2">
         <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#createGiftModal">
             <i class="bi bi-plus-lg me-1"></i> Novo Presente
         </button>
+            <a href="{{ route('painel') }}" class="btn btn-outline-secondary">
+                Voltar para o painel
+            </a>
+        </div>
     </div>
 
     {{-- Filtros --}}
