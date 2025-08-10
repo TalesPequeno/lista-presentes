@@ -11,8 +11,11 @@ class Gift extends Model
 
     protected $fillable = [
         'name',
-        'category',
         'image',
+        'category',
         'is_reserved',
+        'reserved_by',
+        'observation',
+        'reserved_at',
     ];
 }

@@ -8,8 +8,8 @@ use App\Http\Controllers\PainelController;
 // Página inicial com a lista de presentes (pública, sem login)
 Route::get('/', [GiftController::class, 'index'])->name('gifts.index');
 
-// Enviar reserva de presente (pública)
-Route::post('/reserve/{gift}', [GiftController::class, 'reserve'])->name('gifts.reserve');
+// Enviar reserva de presente (pública) — recebe gift_id no corpo do POST
+Route::post('/gifts/reserve', [GiftController::class, 'reserve'])->name('gifts.reserve');
 
 // Dashboard (somente para admin logado)
 Route::get('/painel', [PainelController::class, 'index'])
