@@ -442,6 +442,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
   /* Cards */
   .product-card{
+    display: flex;
+  flex-direction: column;
     border: 1px solid #eef0f3;
     border-radius: var(--radius-2xl);
     background: #fff;
@@ -465,6 +467,9 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   .product-body{ padding: .9rem .9rem 1rem; }
   .gift-name{
+    display: flex;
+  flex-direction: column;
+  flex: 1;   
     font-size: 1rem;
     font-weight: 600;
     color: var(--ink-700);
@@ -473,6 +478,9 @@ document.addEventListener('DOMContentLoaded', function () {
     overflow: hidden;
     text-overflow: ellipsis;
   }
+  .card-cta{
+  margin-top: auto;        /* empurra o botão pro fim */
+}
   .gift-cat-badge{
     font-size: .75rem;
     padding: .2rem .5rem;
@@ -557,11 +565,17 @@ document.addEventListener('DOMContentLoaded', function () {
     margin: .35rem 0 .5rem;
     white-space: normal;              /* permite quebrar */
     display: -webkit-box;
-    -webkit-line-clamp: 2;            /* até 2 linhas */
+    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    white-space: normal;
+
     line-height: 1.25;
+    min-height: calc(1.25em * 2); /* <- garante a “segunda linha fantasma” */
+    margin: .35rem 0 .5rem;  
   }
+
+
 
   /* badge de categoria mais discreta */
   .gift-cat-badge{
