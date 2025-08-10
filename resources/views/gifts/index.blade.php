@@ -567,6 +567,7 @@ document.addEventListener('DOMContentLoaded', function () {
   .gift-cat-badge{
     font-size: .4rem;
     padding: .15rem .4rem;
+    margin-left: -2px;
   }
 
   /* botão mais enxuto */
