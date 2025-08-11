@@ -70,7 +70,7 @@ footer {
     background-position: center;
     background-repeat: no-repeat;
     
-    height: 300px;
+    height: 200px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -81,6 +81,6 @@ footer {
 
 .custom-header h1 {
     font-family: 'Great Vibes', cursive;
-    font-size: 4.0rem;
+    font-size: 3.0rem;
     transform: translateY(30px);
 }
