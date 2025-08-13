@@ -122,7 +122,7 @@
                         <input type="hidden" name="gift_id" id="gift_id" value="{{ old('gift_id') }}">
 
                         <div class="mb-3">
-                            <label for="recipient_name" class="form-label">Nome do(a) presenteado(a) *</label>
+                            <label for="recipient_name" class="form-label">Escreva seu nome *</label>
                             <input type="text" class="form-control form-control-lg" id="recipient_name" name="recipient_name"
                                    value="{{ old('recipient_name') }}" required placeholder="Ex.: Ana Clara">
                         </div>

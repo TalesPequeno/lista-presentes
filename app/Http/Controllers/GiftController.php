@@ -160,4 +160,13 @@ class GiftController extends Controller
             ->route('gifts.admin')
             ->with('success', 'Presente atualizado com sucesso!');
     }
+    public function destroy($id)
+    {
+        $gift = Gift::findOrFail($id);
+        $gift->delete();
+
+        return redirect()
+            ->route('gifts.admin')
+            ->with('success', 'Gift excluído com sucesso.');
+    }
 }
